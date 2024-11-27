@@ -1,0 +1,9 @@
+services:
+  app:
+    build: 
+      context: app
+    ports:
+      - "8000"
+  
+  # nginx:
+  #   image: ngixn:latest
