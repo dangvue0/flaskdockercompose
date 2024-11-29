@@ -4,7 +4,10 @@ from flask_caching import Cache
 import pandas as pd
 import numpy as np
 from flask_apscheduler import APScheduler
-
+import logging
+ 
+logger = logging.getLogger(__name__)
+logger.setLevel = logging.DEBUG
 
 app = Flask(__name__)
 
@@ -15,16 +18,15 @@ scheduler.start()
 # Configure caching
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 
-# def clear_cache():
-#     cache.clear()
-#     df = generate_random_df()
-#     print(df)
-    
-@scheduler.task('cron', id='do_job_1', hour=20, minute=35, misfire_grace_time=900)
-def job1():
+def clear_cache():
     cache.clear()
-    df = generate_random_df()
-    print(df)
+
+    
+@scheduler.task('cron', id='do_job_1', hour=21, minute=43, misfire_grace_time=900)
+def job1():
+    logger.info("APSCHEDULER RUNNING")
+    cache.clear()
+    
 
 @app.route('/', methods=['GET'])
 def index():
@@ -40,8 +42,12 @@ def generate_random_df():
 @app.route('/df', methods=['GET'])
 def get_df():
     df = generate_random_df()
-    
     return jsonify(df.to_dict(orient='records'))
+
+@app.route('/df/reset', methods=['GET'])
+def df_clear_cache():
+    cache.clear()
+    return jsonify(f"Clearing cache on thread.")
    
    
 if __name__ == '__main__':
