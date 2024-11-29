@@ -1,29 +1,30 @@
 from flask import Flask, jsonify, g
-import pandas as pd
-import os
+
 from flask_caching import Cache
+import pandas as pd
 import numpy as np
+from flask_apscheduler import APScheduler
 
 
 app = Flask(__name__)
 
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
 # Configure caching
 cache = Cache(app, config={'CACHE_TYPE': 'SimpleCache'})
 
-# data = {'Name': ['John', 'Mary', 'Peter'], 'Age': [20, 25, 30]}
-# df = pd.DataFrame(data)
-# directory = 'csv_files'
-# if not os.path.exists(directory):
-#     os.makedirs(directory)
+# def clear_cache():
+#     cache.clear()
+#     df = generate_random_df()
+#     print(df)
     
-# df.to_csv('csv_files/data1.csv', index=False)
-# print(df)
-
-# data = {'Name': ['DDDD', 'AAAA', 'BBBB'], 'Age': [22, 33, 44]}
-# df_next = pd.DataFrame(data)
-# df_next.to_csv('csv_files/data2.csv', index=False)
-# print(df_next)
-
+@scheduler.task('cron', id='do_job_1', hour=20, minute=35, misfire_grace_time=900)
+def job1():
+    cache.clear()
+    df = generate_random_df()
+    print(df)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -31,8 +32,7 @@ def index():
 
 
 
-
-@cache.cached(timeout=5)
+@cache.cached(timeout=86400)
 def generate_random_df():
     df = pd.DataFrame(np.random.randint(0, 100, size=(500, 10)), columns=list('ABCDEFGHIJ'))
     return df

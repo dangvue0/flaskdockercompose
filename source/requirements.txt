@@ -3,3 +3,4 @@ pandas
 gunicorn
 flask_caching
 numpy
+flask_apscheduler
